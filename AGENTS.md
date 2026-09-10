@@ -60,3 +60,10 @@ app/src/main/java/li/alalin/nanassistant/
 - **Persistence**: JSON file in internal storage (`chat_messages.json`), loaded on ViewModel init
 - **Network**: Retrofit + Moshi for Volcano Engine Ark API (DeepSeek model)
 - **Threading**: ViewModelScope with `Dispatchers.Main.immediate` for UI, `Dispatchers.IO` for I/O in repository
+
+## Function Calling
+- **Tools**: `get_weather` (via wttr.in API) and `get_current_time` (local)
+- **Flow**: User message → LLM with tools → Tool calls execution → Results sent back → Final response
+- **Implementation**: `ChatViewModel.processChatTurn()` handles multi-turn tool calling
+- **Persistence**: Tool calls and results stored in `chat_messages.json` via `PersistedMessage`/`UiMessage`
+- **API Models**: `Tool`, `Function`, `ToolCall`, `FunctionCall` in `ApiModels.kt`

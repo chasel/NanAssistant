@@ -9,21 +9,34 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import li.alalin.nanassistant.network.ToolCall
 
 @JsonClass(generateAdapter = true)
 data class PersistedMessage(
     @Json(name = "text") val text: String,
     @Json(name = "is_user") val isUser: Boolean,
-    @Json(name = "timestamp") val timestamp: Long = System.currentTimeMillis()
+    @Json(name = "timestamp") val timestamp: Long = System.currentTimeMillis(),
+    @Json(name = "tool_calls") val toolCalls: List<ToolCall>? = null,
+    @Json(name = "tool_call_id") val toolCallId: String? = null,
+    @Json(name = "name") val name: String? = null
 ) {
-    fun toUiMessage() = UiMessage(text, isUser)
+    fun toUiMessage() = UiMessage(text, isUser, toolCalls = toolCalls, toolCallId = toolCallId, name = name)
 }
 
 data class UiMessage(
     val text: String,
     val isUser: Boolean,
-    val isLoading: Boolean = false
-)
+    val isLoading: Boolean = false,
+    val toolCalls: List<ToolCall>? = null,
+    val toolCallId: String? = null,
+    val name: String? = null
+) {
+    val isFunctionResult: Boolean
+        get() = toolCallId != null && !isUser
+
+    val isFunctionCall: Boolean
+        get() = !toolCalls.isNullOrEmpty()
+}
 
 class ChatPersistence(private val context: Context) {
     private val fileName = "chat_messages.json"

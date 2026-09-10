@@ -4,6 +4,7 @@ AI-powered chat assistant Android app built with Jetpack Compose and Material3, 
 
 ## Features
 - 💬 Real-time chat with AI assistant (DeepSeek model via Volcano Engine)
+- 🛠️ **Function Calling**: Weather queries & current time via tool calls
 - 💾 Local chat history persistence (JSON)
 - 🎨 Material3 theming with dynamic colors
 - ⚡ Modern Android stack: Compose, ViewModel, Coroutines, Retrofit, Moshi
@@ -52,16 +53,18 @@ AI-powered chat assistant Android app built with Jetpack Compose and Material3, 
 ## Project Structure
 ```
 app/src/main/java/li/alalin/nanassistant/
-├── MainActivity.kt           # Compose UI entry point
+├── MainActivity.kt              # Compose UI entry point
 ├── data/
-│   └── ChatPersistence.kt    # Local JSON chat storage
+│   └── ChatPersistence.kt       # Local JSON chat storage
 ├── network/
-│   ├── ApiClient.kt          # Retrofit/OkHttp setup
-│   ├── ApiModels.kt          # Request/Response models
-│   └── VolcanoApiService.kt  # API endpoints
+│   ├── ApiClient.kt             # Retrofit/OkHttp setup
+│   ├── ApiModels.kt             # Request/Response models (incl. Function Calling)
+│   ├── VolcanoApiService.kt     # API endpoints
+│   ├── WeatherApiService.kt     # Weather API (wttr.in)
+│   └── WeatherApiModels.kt      # Weather response models
 ├── ui/
-│   ├── ChatViewModel.kt      # ViewModel + chat logic
-│   └── theme/                # Material3 theming
+│   ├── ChatViewModel.kt         # ViewModel + chat logic & Function Calling
+│   └── theme/                   # Material3 theming
 ```
 
 ## Configuration
@@ -86,6 +89,13 @@ app/src/main/java/li/alalin/nanassistant/
 - Chat history persisted to `chat_messages.json` in internal storage
 - Messages loaded on ViewModel initialization
 - Network calls on `Dispatchers.IO`, UI updates on `Dispatchers.Main.immediate`
+
+### Function Calling
+- **Tools**: `get_weather` (wttr.in API) and `get_current_time` (local)
+- **Flow**: User message → LLM with tools → Tool execution → Results returned → Final response
+- **Implementation**: `ChatViewModel.processChatTurn()` handles multi-turn tool calling loop
+- **Models**: `Tool`, `Function`, `ToolCall`, `FunctionCall` in `ApiModels.kt`
+- **Persistence**: Tool calls/results stored via `PersistedMessage`/`UiMessage`
 
 ## Security
 - API keys stored in `local.properties` (excluded from git)

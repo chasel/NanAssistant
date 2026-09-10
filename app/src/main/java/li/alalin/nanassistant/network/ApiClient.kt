@@ -10,7 +10,8 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
-    private const val BASE_URL = "https://ark.cn-beijing.volces.com/api/v3/"
+    private const val VOLCANO_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3/"
+    private const val WEATHER_BASE_URL = "https://wttr.in/"
 
     private val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
@@ -24,17 +25,27 @@ object ApiClient {
 
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
-        .addInterceptor(authInterceptor)
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(60, TimeUnit.SECONDS)
         .writeTimeout(60, TimeUnit.SECONDS)
         .build()
 
-    private val retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
+    private val volcanoClient = okHttpClient.newBuilder()
+        .addInterceptor(authInterceptor)
+        .build()
+
+    private val volcanoRetrofit = Retrofit.Builder()
+        .baseUrl(VOLCANO_BASE_URL)
+        .client(volcanoClient)
+        .addConverterFactory(MoshiConverterFactory.create(moshi))
+        .build()
+
+    private val weatherRetrofit = Retrofit.Builder()
+        .baseUrl(WEATHER_BASE_URL)
         .client(okHttpClient)
         .addConverterFactory(MoshiConverterFactory.create(moshi))
         .build()
 
-    val apiService: VolcanoApiService = retrofit.create(VolcanoApiService::class.java)
+    val apiService: VolcanoApiService = volcanoRetrofit.create(VolcanoApiService::class.java)
+    val weatherService: WeatherApiService = weatherRetrofit.create(WeatherApiService::class.java)
 }
